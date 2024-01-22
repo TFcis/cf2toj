@@ -77,7 +77,7 @@ makedirs(outputpath, 'http')
 logging.info('Copying statements')
 statement_path = os.path.join(inputpath, 'statements/.html/chinese')
 if not os.path.exists(statement_path):
-    statement_path = os.path.join('inputpath', 'statements/.html/english')
+    statement_path = os.path.join(inputpath, 'statements/.html/english')
 
 for filepath in os.listdir(statement_path):
     if filepath == "problem.html":
