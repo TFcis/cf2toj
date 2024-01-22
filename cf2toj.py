@@ -38,10 +38,13 @@ makedirs(outputpath, 'res/testdata')
 
 tasks_group = {}
 cnt = 1
+is_one_group = True
 for test in root.findall("./judging/testset/tests/"):
-    g = test.attrib['group']
+    g = test.attrib.get('group', 0)
+    g_weight = test.attrib.get('points', 0)
+    if g != 0:
+        is_one_group = False
 
-    g_weight = test.attrib['points']
     if g not in tasks_group:
         tasks_group[g] = {
             'weight': int(float(g_weight)),
@@ -53,8 +56,11 @@ for test in root.findall("./judging/testset/tests/"):
 
     cnt += 1
 
+if is_one_group:
+    tasks_group[0]['weight'] = 100
 
-format_str = "{:0" + str(len(str(cnt)) + 1) + "}"
+# format_str = "{:0" + str(len(str(cnt)) + 1) + "}"
+format_str = "{:02}"
 
 for g in tasks_group.values():
     conf['test'].append(g)
