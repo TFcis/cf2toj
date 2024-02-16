@@ -97,7 +97,7 @@ for filepath in os.listdir(statement_path):
             (outputpath, 'http', filepath),
         )
 
-subprocess.run(['sed', '-i', "\'s/background-color: #efefef;//\'", f'{outputpath}/http/problem-statement.css'])
+subprocess.run(['sed', '-i', "s/background-color: #efefef;//", f'{outputpath}/http/problem-statement.css'])
 
 p = subprocess.Popen([
     'tar',
