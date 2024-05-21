@@ -19,6 +19,9 @@ def copyfile(source, target):
         logging.debug('Copying {} to {}'.format(source, target))
         shutil.copyfile(source, target)
 
+def rmdir(path):
+    shutil.rmtree(path)
+
 async def run_and_wait_process(program, *args):
     process = await asyncio.create_subprocess_exec(program, *args)
     returncode = await process.wait()

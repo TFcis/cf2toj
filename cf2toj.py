@@ -5,13 +5,14 @@ import logging
 import os
 import subprocess
 import xml.etree.ElementTree as ET
-from function import makedirs, copyfile, run_and_wait_process
+from function import makedirs, copyfile, rmdir, run_and_wait_process
 
 async def main():
     args_parser = argparse.ArgumentParser(description='cf2toj')
     args_parser.add_argument('inputpath', type=str, help='輸入資料夾')
     args_parser.add_argument('outputpath', type=str, help='輸出資料夾')
     args_parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG)
+    args_parser.add_argument('-c', '--clear-output-directory', action='store_const', dest='is_clear_output_dir', const=True, help='壓縮完成後刪除輸出資料夾')
     args_parser.set_defaults(loglevel=logging.INFO)
     args = args_parser.parse_args()
     inputpath = args.inputpath
@@ -116,6 +117,10 @@ async def main():
         logging.info('Compress failed')
     else:
         logging.info('Compress successfully')
+
+    if args.is_clear_output_dir:
+        logging.info('Delete output directory')
+        rmdir(outputpath)
 
 if __name__ == '__main__':
     asyncio.run(main())
