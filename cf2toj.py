@@ -40,9 +40,8 @@ async def main():
     makedirs(outputpath, 'res/testdata')
 
     tasks_group = {}
-    cnt = 1
     is_one_group = True
-    for test in root.findall("./judging/testset/tests/"):
+    for idx, test in enumerate(root.findall("./judging/testset/tests/")):
         g = test.attrib.get('group', 0)
         g_weight = test.attrib.get('points', 0)
         if g != 0:
@@ -51,32 +50,37 @@ async def main():
         if g not in tasks_group:
             tasks_group[g] = {
                 'weight': int(float(g_weight)),
-                'data': [cnt]
+                'remap': [idx + 1],
             }
         else:
             tasks_group[g]['weight'] += int(float(g_weight))
-            tasks_group[g]['data'].append(cnt)
-
-        cnt += 1
+            tasks_group[g]['remap'].append(idx + 1)
 
     if is_one_group:
         tasks_group[0]['weight'] = 100
 
+
 # format_str = "{:0" + str(len(str(cnt)) + 1) + "}"
     format_str = "{:02}"
 
-    for g in tasks_group.values():
-        conf['test'].append(g)
+    dst = 1
+    for _, g in sorted(tasks_group.items(), key=lambda p: p[0]): # sort by group number
+        g['data'] = []
+        for src in g['remap']:
+            copyfile(
+                (inputpath, 'tests', (format_str + "").format(src)),
+                (outputpath, 'res/testdata', "{}.in".format(dst)),
+            )
 
-        for i in g['data']:
             copyfile(
-                (inputpath, 'tests', (format_str + "").format(i)),
-                (outputpath, 'res/testdata', "{}.in".format(i)),
+                (inputpath, 'tests', (format_str + ".a").format(src)),
+                (outputpath, 'res/testdata', "{}.out".format(dst)),
             )
-            copyfile(
-                (inputpath, 'tests', (format_str + ".a").format(i)),
-                (outputpath, 'res/testdata', "{}.out".format(i)),
-            )
+            g['data'].append(dst)
+            dst += 1
+
+        del g['remap']
+        conf['test'].append(g)
 
     logging.info('Creating config file')
     with open(os.path.join(outputpath, 'conf.json'), 'w') as conffile:
