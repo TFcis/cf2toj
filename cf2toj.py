@@ -5,6 +5,8 @@ import logging
 import os
 import subprocess
 import xml.etree.ElementTree as ET
+import collections
+
 from function import makedirs, copyfile, rmdir, run_and_wait_process
 
 async def main():
@@ -39,24 +41,29 @@ async def main():
 
     makedirs(outputpath, 'res/testdata')
 
-    tasks_group = {}
-    is_one_group = True
+    tasks_group = collections.OrderedDict()
+    groups_enabled = root.find('./judging/testset/groups/') is not None
+    if groups_enabled:
+        for group in root.findall('./judging/testset/groups/'):
+            group_name = group.attrib.get('name')
+            group_points = int(float(group.attrib.get('points', 0)))
+
+            tasks_group[group_name] = {
+                'weight': group_points,
+                'remap': []
+            }
+    else:
+        tasks_group[0] = {
+            'weight': 0,
+            'remap': []
+        }
+
     for idx, test in enumerate(root.findall("./judging/testset/tests/")):
         g = test.attrib.get('group', 0)
-        g_weight = test.attrib.get('points', 0)
-        if g != 0:
-            is_one_group = False
 
-        if g not in tasks_group:
-            tasks_group[g] = {
-                'weight': int(float(g_weight)),
-                'remap': [idx + 1],
-            }
-        else:
-            tasks_group[g]['weight'] += int(float(g_weight))
-            tasks_group[g]['remap'].append(idx + 1)
+        tasks_group[g]['remap'].append(idx + 1)
 
-    if is_one_group:
+    if not groups_enabled:
         tasks_group[0]['weight'] = 100
 
 
