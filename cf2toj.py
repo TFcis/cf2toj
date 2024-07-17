@@ -88,9 +88,15 @@ async def main():
 
     makedirs(outputpath, 'http')
     logging.info('Copying statements')
-    statement_path = os.path.join(inputpath, 'statements/.html/chinese')
-    if not os.path.exists(statement_path):
-        statement_path = os.path.join(inputpath, 'statements/.html/english')
+
+    statement_path = ''
+    for statement in root.findall('./statements/'):
+        if statement.attrib.get('type', '') == 'text/html':
+            statement_path = statement.attrib.get('path', '')
+
+    statement_path = statement_path[0:-13]  # NOTE: Remove '/problem.html'
+
+    statement_path = os.path.join(inputpath, statement_path)
 
     for filepath in os.listdir(statement_path):
         if filepath == "problem.html":
