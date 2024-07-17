@@ -104,7 +104,7 @@ async def main():
                 (outputpath, 'http', filepath),
             )
 
-    subprocess.run(['sed', '-i', "s/background-color: #efefef;//", f'{outputpath}/http/problem-statement.css'])
+    await run_and_wait_process('sed', *['-i', "s/background-color: #efefef;//", f'{outputpath}/http/problem-statement.css'])
 
     logging.info('Compress starting')
     returncode = await run_and_wait_process('tar', *[
