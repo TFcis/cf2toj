@@ -71,7 +71,7 @@ async def main():
     format_str = "{:02}"
 
     dst = 1
-    for _, g in sorted(tasks_group.items(), key=lambda p: p[0]): # sort by group number
+    for _, g in tasks_group.items():
         g['data'] = []
         for src in g['remap']:
             copyfile(
