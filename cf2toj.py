@@ -105,19 +105,22 @@ async def main():
 
     statement_path = os.path.join(inputpath, statement_path)
 
-    for filepath in os.listdir(statement_path):
-        if filepath == "problem.html":
-            copyfile(
-                (statement_path, 'problem.html'),
-                (outputpath, 'http', 'cont.html')
-            )
-        else:
-            copyfile(
-                (statement_path, filepath),
-                (outputpath, 'http', filepath),
-            )
+    if os.path.exists(statement_path):
+        for filepath in os.listdir(statement_path):
+            if filepath == "problem.html":
+                copyfile(
+                    (statement_path, 'problem.html'),
+                    (outputpath, 'http', 'cont.html')
+                )
+            else:
+                copyfile(
+                    (statement_path, filepath),
+                    (outputpath, 'http', filepath),
+                )
 
-    await run_and_wait_process('sed', *['-i', "s/background-color: #efefef;//", f'{outputpath}/http/problem-statement.css'])
+        await run_and_wait_process('sed', *['-i', "s/background-color: #efefef;//", f'{outputpath}/http/problem-statement.css'])
+    else:
+        logging.warning('No statement')
 
     logging.info('Compress starting')
     returncode = await run_and_wait_process('tar', *[
