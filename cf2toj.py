@@ -23,6 +23,13 @@ def replace_in_file(file_path, search_text, replace_text):
     except Exception as e:
         logging.error(f"An error occurred while processing the file {file_path}: {str(e)}")
 
+def check_sed():
+    try:
+        subprocess.run(['sed', '--version'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
 async def main():
     args_parser = argparse.ArgumentParser(description='cf2toj')
     args_parser.add_argument('inputpath', type=str, help='輸入資料夾')
@@ -114,7 +121,7 @@ async def main():
             statement_path = statement.attrib.get('path', '')
 
     if statement_path:
-        statement_path = statement_path[:-13]  # 去除 '/problem.html'
+        statement_path = statement_path[:-13]  # NOTE:REMOVE '/problem.html'
         statement_path = os.path.join(inputpath, statement_path)
 
         if os.path.exists(statement_path):
@@ -130,8 +137,11 @@ async def main():
                         (outputpath, 'http', filepath),
                     )
             
-            # 使用 Python 替代 sed 命令来替换 CSS 文件中的内容
-            replace_in_file(f'{outputpath}/http/problem-statement.css', "background-color: #efefef;", "")
+            # check
+            if check_sed():
+                subprocess.run(['sed', '-i', 's/background-color: #efefef;//g', f'{outputpath}/http/problem-statement.css'])
+            else:
+                replace_in_file(f'{outputpath}/http/problem-statement.css', "background-color: #efefef;", "")
         else:
             logging.warning('No statement found at path: {}'.format(statement_path))
     else:
