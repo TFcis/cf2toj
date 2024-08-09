@@ -9,6 +9,27 @@ import collections
 
 from function import makedirs, copyfile, rmdir, run_and_wait_process
 
+def replace_in_file(file_path, search_text, replace_text):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        
+        content = content.replace(search_text, replace_text)
+        
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
+    except FileNotFoundError:
+        logging.warning(f"File not found: {file_path}")
+    except Exception as e:
+        logging.error(f"An error occurred while processing the file {file_path}: {str(e)}")
+
+def check_sed():
+    try:
+        subprocess.run(['sed', '--version'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
 async def main():
     args_parser = argparse.ArgumentParser(description='cf2toj')
     args_parser.add_argument('inputpath', type=str, help='輸入資料夾')
@@ -22,7 +43,7 @@ async def main():
 
     logging.basicConfig(level=args.loglevel, format='%(asctime)s %(levelname)s %(message)s')
 
-    with open(os.path.join(inputpath, 'problem.xml')) as xml_f:
+    with open(os.path.join(inputpath, 'problem.xml'), encoding='utf-8') as xml_f:
         xml = ET.parse(xml_f)
         root = xml.getroot()
 
@@ -66,8 +87,6 @@ async def main():
     if not groups_enabled:
         tasks_group[0]['weight'] = 100
 
-
-# format_str = "{:0" + str(len(str(cnt)) + 1) + "}"
     format_str = "{:02}"
 
     dst = 1
@@ -75,12 +94,12 @@ async def main():
         g['data'] = []
         for src in g['remap']:
             copyfile(
-                (inputpath, 'tests', (format_str + "").format(src)),
+                (inputpath, 'tests', format_str.format(src)),
                 (outputpath, 'res/testdata', "{}.in".format(dst)),
             )
 
             copyfile(
-                (inputpath, 'tests', (format_str + ".a").format(src)),
+                (inputpath, 'tests', format_str.format(src) + ".a"),
                 (outputpath, 'res/testdata', "{}.out".format(dst)),
             )
             g['data'].append(dst)
@@ -90,8 +109,8 @@ async def main():
         conf['test'].append(g)
 
     logging.info('Creating config file')
-    with open(os.path.join(outputpath, 'conf.json'), 'w') as conffile:
-        json.dump(conf, conffile, indent=4)
+    with open(os.path.join(outputpath, 'conf.json'), 'w', encoding='utf-8') as conffile:
+        json.dump(conf, conffile, indent=4, ensure_ascii=False)
 
     makedirs(outputpath, 'http')
     logging.info('Copying statements')
@@ -101,26 +120,32 @@ async def main():
         if statement.attrib.get('type', '') == 'text/html':
             statement_path = statement.attrib.get('path', '')
 
-    statement_path = statement_path[0:-13]  # NOTE: Remove '/problem.html'
+    if statement_path:
+        statement_path = statement_path[:-13]  # NOTE:REMOVE '/problem.html'
+        statement_path = os.path.join(inputpath, statement_path)
 
-    statement_path = os.path.join(inputpath, statement_path)
-
-    if os.path.exists(statement_path):
-        for filepath in os.listdir(statement_path):
-            if filepath == "problem.html":
-                copyfile(
-                    (statement_path, 'problem.html'),
-                    (outputpath, 'http', 'cont.html')
-                )
+        if os.path.exists(statement_path):
+            for filepath in os.listdir(statement_path):
+                if filepath == "problem.html":
+                    copyfile(
+                        (statement_path, 'problem.html'),
+                        (outputpath, 'http', 'cont.html')
+                    )
+                else:
+                    copyfile(
+                        (statement_path, filepath),
+                        (outputpath, 'http', filepath),
+                    )
+            
+            # check
+            if check_sed():
+                subprocess.run(['sed', '-i', 's/background-color: #efefef;//g', f'{outputpath}/http/problem-statement.css'])
             else:
-                copyfile(
-                    (statement_path, filepath),
-                    (outputpath, 'http', filepath),
-                )
-
-        await run_and_wait_process('sed', *['-i', "s/background-color: #efefef;//", f'{outputpath}/http/problem-statement.css'])
+                replace_in_file(f'{outputpath}/http/problem-statement.css', "background-color: #efefef;", "")
+        else:
+            logging.warning('No statement found at path: {}'.format(statement_path))
     else:
-        logging.warning('No statement')
+        logging.warning('No statement path defined in problem.xml')
 
     logging.info('Compress starting')
     returncode = await run_and_wait_process('tar', *[
@@ -139,7 +164,7 @@ async def main():
         logging.info('Compress successfully')
 
     if args.is_clear_output_dir:
-        logging.info('Delete output directory')
+        logging.info('Deleting output directory')
         rmdir(outputpath)
 
 if __name__ == '__main__':
