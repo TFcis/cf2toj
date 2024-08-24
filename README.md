@@ -8,7 +8,7 @@
 ## windows詳細用法
 1. 先把這個cf2toj tool clone到你的資料夾
 2. 在有cf2toj.py的這個資料夾內開啟cmd 或 powershall
-3. 輸入 `ptthon cf2toj.py /path/to/input/directory /path/to/output/directory (-d, --debug) (-c, --clear-output-directory)`
+3. 輸入 `python cf2toj.py /path/to/input/directory /path/to/output/directory (-d, --debug) (-c, --clear-output-directory)`
   * /path/to/input/directory 為CF格式之資料夾(pakage下載為linux格式，且記得解壓縮)
   * /path/to/output/directory 為預輸出之資料夾(假如未存在則會自動創建)
   * (-d 或 --debug) 為 debug 模式 (未輸入則視為不開啟)
