@@ -41,6 +41,7 @@ async def main():
     args_parser.add_argument('outputpath', type=str, nargs='?', help='輸出資料夾')
     args_parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG)
     args_parser.add_argument('-c', '--clear-output-directory', action='store_const', dest='is_clear_output_dir', const=True, help='壓縮完成後刪除輸出資料夾')
+    args_parser.add_argument('--enable-dependency', action='store_const', dest='enable_dependency', const=True, help='是否啟用polygon子任務依賴')
     args_parser.set_defaults(loglevel=logging.INFO)
     args = args_parser.parse_args()
     inputpath = args.inputpath
@@ -81,14 +82,20 @@ async def main():
             group_name = group.attrib.get('name')
             group_points = int(float(group.attrib.get('points', 0)))
 
+            dependencies = []
+            for depend in group.findall('dependencies/'):
+                dependencies.append(depend.attrib.get('group'))
+
             tasks_group[group_name] = {
                 'weight': group_points,
-                'remap': []
+                'remap': [],
+                'dependencies': dependencies,
             }
     else:
         tasks_group[0] = {
             'weight': 0,
-            'remap': []
+            'remap': [],
+            'dependencies': [],
         }
 
     for idx, test in enumerate(root.findall("./judging/testset/tests/")):
@@ -98,6 +105,7 @@ async def main():
 
     if not groups_enabled:
         tasks_group[0]['weight'] = 100
+
 
     format_str = "{:02}"
 
@@ -117,8 +125,15 @@ async def main():
             g['data'].append(dst)
             dst += 1
 
-        del g['remap']
-        conf['test'].append(g)
+        if args.enable_dependency:
+            for depend_group in g['dependencies']:
+                g['data'].extend(tasks_group[depend_group]['remap'])
+
+        dep = g.pop('dependencies')
+        remap = g.pop('remap')
+        conf['test'].append(g.copy())
+        g['dependencies'] = dep
+        g['remap'] = remap
 
     logging.info('Creating config file')
     with open(os.path.join(tmp_outputpath, 'conf.json'), 'w', encoding='utf-8') as conffile:
@@ -148,7 +163,7 @@ async def main():
                         (statement_path, filepath),
                         (tmp_outputpath, 'http', filepath),
                     )
-            
+
             # check
             if check_sed():
                 subprocess.run(['sed', '-i', 's/background-color: #efefef;//g', f'{tmp_outputpath}/http/problem-statement.css'])
