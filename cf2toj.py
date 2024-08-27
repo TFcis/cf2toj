@@ -18,9 +18,9 @@ def replace_in_file(file_path, search_text, replace_text):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
-        
+
         content = content.replace(search_text, replace_text)
-        
+
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write(content)
     except FileNotFoundError:
@@ -38,7 +38,7 @@ def check_sed():
 async def main():
     args_parser = argparse.ArgumentParser(description='cf2toj')
     args_parser.add_argument('inputpath', type=str, help='輸入資料夾')
-    args_parser.add_argument('outputpath', type=str, help='輸出資料夾')
+    args_parser.add_argument('outputpath', type=str, nargs='?', help='輸出資料夾')
     args_parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG)
     args_parser.add_argument('-c', '--clear-output-directory', action='store_const', dest='is_clear_output_dir', const=True, help='壓縮完成後刪除輸出資料夾')
     args_parser.set_defaults(loglevel=logging.INFO)
@@ -47,13 +47,14 @@ async def main():
     outputpath = args.outputpath
 
     logging.basicConfig(level=args.loglevel, format='%(asctime)s %(levelname)s %(message)s')
-    
+
     if args.is_clear_output_dir:
-        random_dir = generate_random_file_name()
-        tmp_outputpath = os.path.join(os.path.dirname(outputpath), random_dir)
+        tmp_outputpath = generate_random_file_name()
+        logging.info("Use random temp directory")
+        logging.info(f"Output filename is {tmp_outputpath}.tar.xz")
     else:
         tmp_outputpath = outputpath
-        
+
     with open(os.path.join(inputpath, 'problem.xml'), encoding='utf-8') as xml_f:
         xml = ET.parse(xml_f)
         root = xml.getroot()
