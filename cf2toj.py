@@ -61,17 +61,20 @@ async def main():
         root = xml.getroot()
 
     conf = {
-        'timelimit': 0,
-        'memlimit': 0,
-        'compile': 'g++',
-        'score': 'rate',
+        'limit': {
+            'default': {
+                'timelimit': 0,
+                'memlimit': 0,
+            }
+        },
+        'is_makefile': False,
         'check': 'diff', # two mode : 'diff' or 'diff-strict'
         'test': [],
         'metadata': {}
     }
 
-    conf['timelimit'] = root.find('./judging/testset/time-limit').text
-    conf['memlimit'] = int(int(root.find('./judging/testset/memory-limit').text) / 1024)
+    conf['limit']['default']['timelimit'] = int(root.find('./judging/testset/time-limit').text)
+    conf['limit']['default']['memlimit'] = int(int(root.find('./judging/testset/memory-limit').text) / 1024)
 
     makedirs(tmp_outputpath, 'res/testdata')
 

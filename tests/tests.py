@@ -39,8 +39,8 @@ class Testcf2toj(unittest.TestCase):
 
         with open(f'{test_path}/conf.json') as conf_file:
             conf = json.load(conf_file)
-            self.assertEqual(int(conf['timelimit']), 1000)
-            self.assertEqual(int(conf['memlimit']), 262144)
+            self.assertEqual(int(conf['limit']['default']['timelimit']), 1000)
+            self.assertEqual(int(conf['limit']['default']['memlimit']), 262144)
             self.assertEqual(len(conf['test']), 2)
 
             self.assertEqual(int(conf['test'][0]['weight']), 99)
@@ -68,8 +68,8 @@ class Testcf2toj(unittest.TestCase):
 
         with open(f'{test_path}/conf.json') as conf_file:
             conf = json.load(conf_file)
-            self.assertEqual(int(conf['timelimit']), 1000)
-            self.assertEqual(int(conf['memlimit']), 262144)
+            self.assertEqual(int(conf['limit']['default']['timelimit']), 1000)
+            self.assertEqual(int(conf['limit']['default']['memlimit']), 262144)
             self.assertEqual(len(conf['test']), 3)
 
             self.assertEqual(int(conf['test'][0]['weight']), 1)
@@ -105,3 +105,4 @@ if __name__ == '__main__':
 #
 # test `-c` && `--enable-dependency`
 # --enable-dependency check conf.json
+
