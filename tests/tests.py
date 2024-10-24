@@ -44,13 +44,13 @@ class Testcf2toj(unittest.TestCase):
             self.assertEqual(len(conf['test']), 2)
 
             self.assertEqual(int(conf['test'][0]['weight']), 99)
-            self.assertEqual(conf['test'][0]['data'], list(range(1, 23)))
+            self.assertEqual(conf['test'][0]['data'], list(map(str, range(1, 23))))
             for i in conf['test'][0]['data']:
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.in"))
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.out"))
 
             self.assertEqual(int(conf['test'][1]['weight']), 1)
-            self.assertEqual(conf['test'][1]['data'], list(range(23, 124)))
+            self.assertEqual(conf['test'][1]['data'], list(map(str, range(23, 124))))
             for i in conf['test'][1]['data']:
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.in"))
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.out"))
@@ -73,19 +73,19 @@ class Testcf2toj(unittest.TestCase):
             self.assertEqual(len(conf['test']), 3)
 
             self.assertEqual(int(conf['test'][0]['weight']), 1)
-            self.assertEqual(conf['test'][0]['data'], list(range(1, 2)))
+            self.assertEqual(conf['test'][0]['data'], list(map(str, range(1, 2))))
             for i in conf['test'][0]['data']:
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.in"))
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.out"))
 
             self.assertEqual(int(conf['test'][1]['weight']), 50)
-            self.assertEqual(conf['test'][1]['data'], list(range(2, 102)) + list(range(1, 2)))
+            self.assertEqual(conf['test'][1]['data'], list(map(str, range(2, 102))) + list(map(str, range(1, 2))))
             for i in conf['test'][1]['data']:
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.in"))
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.out"))
 
             self.assertEqual(int(conf['test'][2]['weight']), 49)
-            self.assertEqual(conf['test'][2]['data'], list(range(102, 201)) + list(range(2, 102)))
+            self.assertEqual(conf['test'][2]['data'], list(map(str, range(102, 201))) + list(map(str, range(2, 102))))
             for i in conf['test'][2]['data']:
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.in"))
                 self.assertTrue(os.path.isfile(f"{test_path}/res/testdata/{i}.out"))

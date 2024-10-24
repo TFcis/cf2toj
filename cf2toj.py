@@ -1,8 +1,9 @@
-import asyncio
-import argparse
-import json
-import logging
 import os
+import copy
+import json
+import asyncio
+import logging
+import argparse
 import subprocess
 import xml.etree.ElementTree as ET
 import collections
@@ -91,52 +92,43 @@ async def main():
 
             tasks_group[group_name] = {
                 'weight': group_points,
-                'remap': [],
+                'data': [],
                 'dependencies': dependencies,
             }
     else:
         tasks_group[0] = {
             'weight': 0,
-            'remap': [],
+            'data': [],
             'dependencies': [],
         }
 
-    for idx, test in enumerate(root.findall("./judging/testset/tests/")):
+    format_str = "{:02}"
+    for idx, test in enumerate(root.findall("./judging/testset/tests/"), start=1):
         g = test.attrib.get('group', 0)
 
-        tasks_group[g]['remap'].append(idx + 1)
+        tasks_group[g]['data'].append(str(idx))
+
+        copyfile(
+            (inputpath, 'tests', format_str.format(idx)),
+            (tmp_outputpath, 'res/testdata', "{}.in".format(idx)),
+        )
+
+        copyfile(
+            (inputpath, 'tests', format_str.format(idx) + ".a"),
+            (tmp_outputpath, 'res/testdata', "{}.out".format(idx)),
+        )
 
     if not groups_enabled:
         tasks_group[0]['weight'] = 100
 
-
-    format_str = "{:02}"
-
-    dst = 1
     for _, g in tasks_group.items():
-        g['data'] = []
-        for src in g['remap']:
-            copyfile(
-                (inputpath, 'tests', format_str.format(src)),
-                (tmp_outputpath, 'res/testdata', "{}.in".format(dst)),
-            )
-
-            copyfile(
-                (inputpath, 'tests', format_str.format(src) + ".a"),
-                (tmp_outputpath, 'res/testdata', "{}.out".format(dst)),
-            )
-            g['data'].append(dst)
-            dst += 1
-
+        write_group = copy.deepcopy(g)
         if args.enable_dependency:
-            for depend_group in g['dependencies']:
-                g['data'].extend(tasks_group[depend_group]['remap'])
+            for depend_group in write_group['dependencies']:
+                write_group['data'].extend(tasks_group[depend_group]['data'])
 
-        dep = g.pop('dependencies')
-        remap = g.pop('remap')
-        conf['test'].append(g.copy())
-        g['dependencies'] = dep
-        g['remap'] = remap
+        write_group.pop('dependencies')
+        conf['test'].append(write_group)
 
     logging.info('Creating config file')
     with open(os.path.join(tmp_outputpath, 'conf.json'), 'w', encoding='utf-8') as conffile:
