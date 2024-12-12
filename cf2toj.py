@@ -42,7 +42,7 @@ async def main():
     args_parser.add_argument('outputpath', type=str, nargs='?', help='輸出資料夾')
     args_parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG)
     args_parser.add_argument('-c', '--clear-output-directory', action='store_const', dest='is_clear_output_dir', const=True, help='壓縮完成後刪除輸出資料夾')
-    args_parser.add_argument('--enable-dependency', action='store_const', dest='enable_dependency', const=True, help='是否啟用polygon子任務依賴')
+    args_parser.add_argument('-e', '--enable-dependency', action='store_const', dest='enable_dependency', const=True, help='是否啟用polygon子任務依賴')
     args_parser.set_defaults(loglevel=logging.INFO)
     args = args_parser.parse_args()
     inputpath = args.inputpath
@@ -51,7 +51,7 @@ async def main():
     logging.basicConfig(level=args.loglevel, format='%(asctime)s %(levelname)s %(message)s')
 
     if args.is_clear_output_dir:
-        tmp_outputpath = generate_random_file_name()
+        tmp_outputpath = os.path.join(outputpath, generate_random_file_name())
         logging.info("Use random temp directory")
         logging.info(f"Output filename is {tmp_outputpath}.tar.xz")
     else:
