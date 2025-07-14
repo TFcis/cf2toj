@@ -95,6 +95,7 @@ async def main():
                 'data': [],
                 'dependencies': dependencies,
             }
+
     else:
         tasks_group[0] = {
             'weight': 0,
@@ -102,9 +103,17 @@ async def main():
             'dependencies': [],
         }
 
+
     format_str = "{:02}"
     for idx, test in enumerate(root.findall("./judging/testset/tests/"), start=1):
         g = test.attrib.get('group', 0)
+        if 'group' not in test.attrib and groups_enabled:
+            logging.warning(f'Testdata {test} does not have a group attrib. It might be missing group')
+            tasks_group[0] = {
+                'weight': 0,
+                'data': [],
+                'dependencies': [],
+            }
 
         tasks_group[g]['data'].append(str(idx))
 
