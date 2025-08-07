@@ -34,19 +34,6 @@ def replace_in_file(file_path, search_text, replace_text):
         )
 
 
-def check_sed():
-    try:
-        subprocess.run(
-            ["sed", "--version"],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
-
-
 async def main():
     args_parser = argparse.ArgumentParser(description="cf2toj")
     args_parser.add_argument("inputpath", type=str, help="輸入資料夾")
@@ -204,22 +191,11 @@ async def main():
                         (tmp_outputpath, "http", filepath),
                     )
 
-            # check
-            if check_sed():
-                subprocess.run(
-                    [
-                        "sed",
-                        "-i",
-                        "s/background-color: #efefef;//g",
-                        f"{tmp_outputpath}/http/problem-statement.css",
-                    ]
-                )
-            else:
-                replace_in_file(
-                    f"{tmp_outputpath}/http/problem-statement.css",
-                    "background-color: #efefef;",
-                    "",
-                )
+            replace_in_file(
+                f"{tmp_outputpath}/http/problem-statement.css",
+                "background-color: #efefef;",
+                "",
+            )
         else:
             logging.warning("No statement found at path: {}".format(statement_path))
     else:
